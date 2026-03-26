@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { UserPlus, Search, Building2, User, Trash2, Edit, Plus, Minus, Phone, History, Calendar, X } from 'lucide-react';
+import { UserPlus, Search, Building2, User, Trash2, Edit, Plus, Minus, Phone, History, Calendar, X, Star } from 'lucide-react';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import toast from 'react-hot-toast';
@@ -20,7 +20,6 @@ export default function VeresiyePage({ data, onRefresh }: VeresiyePageProps) {
   const [formData, setFormData] = useState({ name: '', type: 'kisi', phone: '' });
   const [transData, setTransData] = useState({ amount: '', note: '', type: 'alacak_ekle' });
 
-  // --- ESLINT HATASI ÇÖZÜLDÜ: Sonsuz döngüyü engellemek için sadece ID'yi dinliyoruz ---
   const selectedPersonId = selectedPerson?.id;
   
   useEffect(() => {
@@ -58,7 +57,6 @@ export default function VeresiyePage({ data, onRefresh }: VeresiyePageProps) {
     if (!selectedPerson || !transData.amount) return;
 
     try {
-      // Virgülü noktaya çevir, binlik noktaları varsa temizle
       const cleanAmount = transData.amount.toString().replace(/\./g, '').replace(',', '.');
       const numericAmount = parseFloat(cleanAmount);
 
@@ -85,7 +83,13 @@ export default function VeresiyePage({ data, onRefresh }: VeresiyePageProps) {
     } catch { toast.error('İşlem başarısız'); }
   };
 
-  const filtered = data.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  // Yıldızlıları en üste alacak şekilde sıralama ve arama filtresi
+  const sortedData = [...data].sort((a, b) => {
+    if (a.is_starred === b.is_starred) return 0;
+    return a.is_starred ? -1 : 1;
+  });
+  
+  const filtered = sortedData.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
     <div className="p-4 pb-32 animate-in fade-in duration-500">
@@ -131,6 +135,20 @@ export default function VeresiyePage({ data, onRefresh }: VeresiyePageProps) {
                 <span className="text-[9px] uppercase font-bold text-slate-600 tracking-tighter">{person.balance >= 0 ? 'Alacak' : 'Borç'}</span>
               </div>
               <div className="flex gap-1">
+                <button 
+                  onClick={async (e) => { 
+                    e.stopPropagation(); 
+                    try {
+                      await api.toggleVeresiyePersonStar(person.id, person.is_starred);
+                      onRefresh();
+                    } catch {
+                      toast.error('İşlem başarısız');
+                    }
+                  }} 
+                  className={`p-2 transition-colors ${person.is_starred ? 'text-amber-400' : 'text-slate-500 hover:text-amber-400'}`}
+                >
+                  <Star size={18} fill={person.is_starred ? "currentColor" : "none"} />
+                </button>
                 <button onClick={(e) => { e.stopPropagation(); setSelectedPerson(person); setFormData({name:person.name, type:person.type, phone:person.phone||''}); setIsEditModalOpen(true); }} className="p-2 text-slate-500 hover:text-amber-500 transition-colors"><Edit size={18} /></button>
                 <button onClick={(e) => { e.stopPropagation(); if(confirm(`${person.name} silinsin mi?`)) api.deleteVeresiyePerson(person.id).then(onRefresh); }} className="p-2 text-slate-500 hover:text-red-500 transition-colors"><Trash2 size={18} /></button>
               </div>
@@ -149,7 +167,10 @@ export default function VeresiyePage({ data, onRefresh }: VeresiyePageProps) {
                   {selectedPerson.type === 'firma' ? <Building2 size={24} /> : <User size={24} />}
                 </div>
                 <div>
-                  <h2 className="text-xl font-black text-white leading-none mb-1">{selectedPerson.name}</h2>
+                  <h2 className="text-xl font-black text-white leading-none mb-1 flex items-center gap-2">
+                    {selectedPerson.name}
+                    {selectedPerson.is_starred && <Star size={16} className="text-amber-400" fill="currentColor" />}
+                  </h2>
                   <p className="text-xs text-slate-500 flex items-center gap-1"><Phone size={10}/> {selectedPerson.phone || 'Numara yok'}</p>
                 </div>
               </div>
@@ -170,7 +191,6 @@ export default function VeresiyePage({ data, onRefresh }: VeresiyePageProps) {
                   <button onClick={() => setTransData({...transData, type: 'borc_odeme'})} className={`flex-1 py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all ${transData.type === 'borc_odeme' ? 'bg-red-500 text-white shadow-lg' : 'bg-slate-800 text-slate-500'}`}><Minus size={18}/> Borç</button>
                 </div>
                 
-                {/* --- EXCEL TARZI KURUŞ/ONDALIK BUTONLARI --- */}
                 <div className="flex justify-end gap-2 mb-1 mt-2">
                   <button 
                     onClick={() => {
@@ -209,7 +229,6 @@ export default function VeresiyePage({ data, onRefresh }: VeresiyePageProps) {
                     Kuruşu Sil
                   </button>
                 </div>
-                {/* -------------------------------------------------------- */}
 
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-xl">₺</span>

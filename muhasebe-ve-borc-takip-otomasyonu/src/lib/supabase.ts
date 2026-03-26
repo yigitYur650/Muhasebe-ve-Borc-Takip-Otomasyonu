@@ -67,7 +67,7 @@ export const api = {
     const { error } = await supabase.from('veresiye_transactions').insert([{ person_id: personId, amount, type, note }]);
     if (error) throw error;
   },
-  // YENİ EKLEDİĞİMİZ KISIM: İşlem Güncelleme
+  // İşlem Güncelleme
   updateVeresiyeTransaction: async (id: string, updates: any) => {
     const { error } = await supabase.from('veresiye_transactions').update(updates).eq('id', id);
     if (error) throw error;
@@ -76,5 +76,17 @@ export const api = {
   deleteVeresiyeTransaction: async (id: string) => {
     const { error } = await supabase.from('veresiye_transactions').delete().eq('id', id);
     if (error) throw error;
+  },
+  // YENİ EKLENEN KISIM: Veresiye kişisini yıldızla / yıldızı kaldır
+  toggleVeresiyePersonStar: async (id: string, currentStatus: boolean) => {
+    const { data, error } = await supabase
+      .from('veresiye_persons')
+      .update({ is_starred: !currentStatus })
+      .eq('id', id)
+      .select()
+      .single();
+      
+    if (error) throw error;
+    return data;
   }
 };
