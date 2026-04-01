@@ -3,7 +3,7 @@ name: Haftalik Veritabani Yedegi
 on:
   schedule:
     - cron: '0 0 * * 0' # Her Pazar gece 00:00
-  workflow_dispatch: # Manuel tetikleme butonu
+  workflow_dispatch: # Manuel buton
 
 jobs:
   backup:
@@ -15,10 +15,32 @@ jobs:
           sudo apt-get install -y postgresql-client
           pg_dump "${{ secrets.SUPABASE_DB_URL }}" > dukkan_yedek.sql
 
-      - name: Google Drive'a Yukle
-        uses: adityasamant25/google-drive-upload-git-action@main
-        with:
-          credentials: ${{ secrets.GDRIVE_CREDENTIALS }}
-          filename: "dukkan_yedek.sql"
-          folderId: ${{ secrets.GDRIVE_FOLDER_ID }}
-          overwrite: "false"
+      - name: Google API Araclari Kurulumu
+        run: pip install google-api-python-client google-auth
+
+      - name: Google Drive'a Guvenli Yukleme (Python)
+        env:
+          GDRIVE_CREDENTIALS: ${{ secrets.GDRIVE_CREDENTIALS }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+        run: |
+          python -c "
+          import os, json
+          from google.oauth2 import service_account
+          from googleapiclient.discovery import build
+          from googleapiclient.http import MediaFileUpload
+
+          # Sırları kasadan al
+          creds_info = json.loads(os.environ['GDRIVE_CREDENTIALS'])
+          creds = service_account.Credentials.from_service_account_info(creds_info)
+          
+          # Google Drive'a baglan
+          service = build('drive', 'v3', credentials=creds)
+
+          # Dosyayi hazirla ve yukle
+          file_metadata = {'name': 'dukkan_yedek.sql', 'parents': [os.environ['GDRIVE_FOLDER_ID']]}
+          media = MediaFileUpload('dukkan_yedek.sql', mimetype='application/sql')
+          
+          print('Drive yuklemesi baslatiliyor...')
+          file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+          print('Basarili! Yedek Drive klasorune eklendi.')
+          "
