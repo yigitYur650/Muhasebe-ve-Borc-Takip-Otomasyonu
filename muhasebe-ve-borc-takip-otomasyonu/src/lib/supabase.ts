@@ -20,6 +20,7 @@ const mapSaleToDB = (sale: any) => {
 
 export const api = {
   getSalesByDate: async (date: string) => {
+    // RLS (deleted_at IS NULL) kuralı sayesinde silinenler zaten gelmeyecek
     const { data, error } = await supabase.from('sales').select('*').eq('date', date).order('created_at', { ascending: false });
     return error ? [] : data || [];
   },
@@ -35,8 +36,12 @@ export const api = {
     if (error) throw error;
     return data;
   },
+  // --- HAYALET SİLME GÜNCELLEMESİ ---
   deleteSale: async (id: number) => {
-    const { error } = await supabase.from('sales').delete().eq('id', id);
+    const { error } = await supabase
+      .from('sales')
+      .update({ deleted_at: new Date().toISOString() }) // Tamamen silmek yerine tarih damgası vuruyoruz
+      .eq('id', id);
     if (error) throw error;
   },
   getReport: async (startDate: string, endDate: string) => {
@@ -59,25 +64,30 @@ export const api = {
     if (error) throw error;
     return data;
   },
+  // --- HAYALET SİLME GÜNCELLEMESİ ---
   deleteVeresiyePerson: async (id: string) => {
-    const { error } = await supabase.from('veresiye_persons').delete().eq('id', id);
+    const { error } = await supabase
+      .from('veresiye_persons')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id);
     if (error) throw error;
   },
   addVeresiyeTransaction: async (personId: string, amount: number, type: string, note: string) => {
     const { error } = await supabase.from('veresiye_transactions').insert([{ person_id: personId, amount, type, note }]);
     if (error) throw error;
   },
-  // İşlem Güncelleme
   updateVeresiyeTransaction: async (id: string, updates: any) => {
     const { error } = await supabase.from('veresiye_transactions').update(updates).eq('id', id);
     if (error) throw error;
   },
-  // İşlem Silme
+  // --- HAYALET SİLME GÜNCELLEMESİ ---
   deleteVeresiyeTransaction: async (id: string) => {
-    const { error } = await supabase.from('veresiye_transactions').delete().eq('id', id);
+    const { error } = await supabase
+      .from('veresiye_transactions')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id);
     if (error) throw error;
   },
-  // YENİ EKLENEN KISIM: Veresiye kişisini yıldızla / yıldızı kaldır
   toggleVeresiyePersonStar: async (id: string, currentStatus: boolean) => {
     const { data, error } = await supabase
       .from('veresiye_persons')
