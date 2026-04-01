@@ -1,0 +1,24 @@
+name: Haftalik Veritabani Yedegi
+
+on:
+  schedule:
+    - cron: '0 0 * * 0' # Her Pazar gece 00:00
+  workflow_dispatch: # Manuel tetikleme butonu
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Veritabani Yedegini Al (pg_dump)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+          pg_dump "${{ secrets.SUPABASE_DB_URL }}" > dukkan_yedek.sql
+
+      - name: Google Drive'a Yukle
+        uses: adityasamant25/google-drive-upload-git-action@main
+        with:
+          credentials: ${{ secrets.GDRIVE_CREDENTIALS }}
+          filename: "dukkan_yedek.sql"
+          folderId: ${{ secrets.GDRIVE_FOLDER_ID }}
+          overwrite: "false"
