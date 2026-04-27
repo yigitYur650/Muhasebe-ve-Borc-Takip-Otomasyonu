@@ -1,20 +1,13 @@
+# 💹 Enterprise Financial Ledger & Debt Tracking System
 
-Küçük ve orta ölçekli işletmeler (KOBİ'ler) için geliştirilmiş; günlük ciro takibi, detaylı veresiye/cari hesap yönetimi ve raporlama imkanı sunan modern bir ön muhasebe otomasyonudur.
+A secure financial operations platform focused on credit-sales, receivables, and automated accounting workflows.
 
-## 🚀 Özellikler
+### 🛡️ Engineering & Quality Standards
+* **Production-Grade Testing:** Integrated **Playwright** for End-to-End (E2E) testing, including specialized **Stress Tests** to ensure system stability under heavy load.
+* **Automated CI/CD Pipelines:** Fully automated deployments and testing via **GitHub Actions**.
+* **Financial Integrity:** Advanced ledger logic for tracking partial payments, overdue debts (Veresiye), and customer-wise financial history.
+* **Security-First:** Implementation of Supabase RLS and environment variable discipline for sensitive financial data.
 
-* **Ciro Takibi:** Günlük satışların (Nakit, Kredi Kartı, IBAN, Mail Order) kategorize edilerek kayıt altına alınması.
-* **Veresiye ve Cari Yönetimi:** Müşteri ve tedarikçiler için alacak/borç hesaplarının tutulması ve bakiye takibi.
-* **Akıllı Sıralama (Yıldızlama):** Sık işlem yapılan VIP müşteri veya firmaların favorilere eklenerek listede her zaman en üstte tutulması (UX optimizasyonu).
-* **Dinamik Raporlama:** Tarih bazlı filtrelemeler ile nakit akışı ve satış özetlerinin görüntülenmesi.
-* **Güvenli Kimlik Doğrulama:** Supabase Auth ile yetkisiz erişimlerin engellenmesi.
-* **Uçtan Uca (E2E) Test Altyapısı:** Playwright ile kritik kullanıcı senaryolarının (login, sıralama algoritmaları) otomatize edilmiş testleri.
-
-## 🛠 Teknoloji Yığını (Tech Stack)
-
-* **Frontend:** React, TypeScript, Vite
-* **Stil & UI:** Tailwind CSS, Lucide React (İkonlar)
-* **Backend & Veritabanı (BaaS):** Supabase (PostgreSQL, Authentication)
-* **Test Otomasyonu:** Playwright
-* **Tarih Yönetimi:** date-fns
-
+### 🛠️ Tech Stack
+* **Stack:** React, TypeScript, Tailwind CSS, Supabase.
+* **QA:** Playwright, GitHub Actions.
